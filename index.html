@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>我的导航</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧭</text></svg>">
+<style>
+:root{
+  --bg:#f4f5f7; --card:#fff; --text:#1f2328; --muted:#6b7280; --line:#e5e7eb;
+  --accent:#2563eb; --accent-soft:#e8efff; --hover:#f1f3f6; --danger:#dc2626;
+  --shadow:0 1px 2px rgba(0,0,0,.05),0 2px 8px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#121417;--card:#1b1e23;--text:#e6e8eb;--muted:#9aa1ab;--line:#2b2f36;
+  --accent:#6ea0ff;--accent-soft:#1f2a40;--hover:#23272e;--shadow:none}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font:14px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit}
+.wrap{max-width:1280px;margin:0 auto;padding:24px 20px 60px}
+
+/* ---------- 顶部：时间 / 天气 / 工具 ---------- */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.info{display:flex;align-items:center;gap:22px;flex-wrap:wrap}
+.clk .time{font-size:42px;font-weight:600;line-height:1.05;letter-spacing:.5px;font-variant-numeric:tabular-nums}
+.clk.bj .time{color:var(--muted)}
+.clk .sub,.wx .sub{font-size:13px;color:var(--muted);margin-top:4px;white-space:nowrap}
+.clk .sub b{color:var(--text);font-weight:600;margin-right:6px}
+.sep{width:1px;height:46px;background:var(--line)}
+.wx{position:relative}
+.wxb{display:flex;align-items:center;gap:10px;border:0;background:none;padding:4px 8px;margin:-4px -8px;border-radius:10px;cursor:pointer;text-align:left}
+.wxb:hover{background:var(--hover)}
+.wxb .wi{font-size:36px;line-height:1}
+.wxb .temp{font-size:26px;font-weight:600;line-height:1.1}
+.wxb .temp small{font-size:14px;font-weight:400;color:var(--muted);margin-left:6px}
+.wpop{display:none;position:absolute;z-index:20;top:calc(100% + 10px);left:-8px;width:290px;background:var(--card);
+  border:1px solid var(--line);border-radius:12px;box-shadow:0 8px 28px rgba(0,0,0,.16);padding:12px}
+.wpop.show{display:block}
+.wpop .row{display:flex;gap:6px}
+.wpop input{flex:1;min-width:0;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:8px;padding:7px 10px;outline:none}
+.wpop input:focus{border-color:var(--accent)}
+#wres{margin:8px 0}
+#wres button{display:block;width:100%;text-align:left;border:0;background:none;padding:6px 8px;border-radius:7px;cursor:pointer}
+#wres button:hover{background:var(--hover)}
+#wres small{color:var(--muted)}
+.wmode{font-size:12px;color:var(--muted);margin-bottom:8px}
+.wmode b{color:var(--text)}
+.wopt{display:block;width:100%;text-align:left;margin-top:6px;white-space:normal}
+.wopt small{display:block;color:var(--muted);font-size:11.5px;margin-top:1px}
+.tools{display:flex;gap:6px;flex-wrap:wrap}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:8px;padding:6px 11px;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.warn{border-color:var(--danger);color:var(--danger)}
+
+/* ---------- 搜索 ---------- */
+.search{max-width:780px;margin:38px auto 34px}
+.engines{display:flex;justify-content:center;gap:4px;margin-bottom:14px;flex-wrap:wrap}
+.engines button{border:0;background:none;color:var(--muted);padding:5px 14px;border-radius:999px;cursor:pointer;font-size:14px}
+.engines button:hover{color:var(--text)}
+.engines button.on{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.sbox{display:flex;align-items:center;gap:8px;background:var(--card);border:1.5px solid var(--line);border-radius:999px;
+  padding:7px 7px 7px 26px;box-shadow:0 2px 6px rgba(0,0,0,.05),0 8px 24px rgba(0,0,0,.06)}
+.sbox:focus-within{border-color:var(--accent)}
+.sbox input{flex:1;min-width:0;border:0;background:none;color:var(--text);font-size:18px;height:46px;outline:none}
+.sbox .go{background:var(--accent);color:#fff;border:0;border-radius:999px;height:46px;padding:0 28px;font-size:16px;cursor:pointer}
+.sbox .go:hover{filter:brightness(1.08)}
+.hint{font-size:12px;color:var(--muted);margin-top:12px;text-align:center}
+.sboxw{position:relative}
+.drop{display:none;position:absolute;z-index:15;left:16px;right:16px;top:calc(100% + 8px);background:var(--card);
+  border:1px solid var(--line);border-radius:16px;box-shadow:0 10px 32px rgba(0,0,0,.16);padding:8px}
+.drop.show{display:block}
+.matches{display:none;flex-wrap:wrap;gap:6px;padding:4px}
+.matches.show{display:flex}
+.matches a{padding:6px 12px;border-radius:8px;background:var(--hover);font-size:13px;display:flex;align-items:center;gap:6px}
+.matches a.sel{outline:2px solid var(--accent)}
+.matches.show + .sug:not(:empty){border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+.sug div{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:9px;cursor:pointer;font-size:15px}
+.sug div::before{content:"⌕";color:var(--muted);font-size:16px;line-height:1}
+.sug div:hover,.sug div.sel{background:var(--hover)}
+.sug b{font-weight:600}
+
+/* ---------- 快捷栏 ---------- */
+.quick{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:10px;margin-bottom:20px}
+.quick a{background:var(--card);border-radius:12px;box-shadow:var(--shadow);padding:12px 6px 9px;
+  display:flex;flex-direction:column;align-items:center;gap:6px;font-size:12px;text-align:center;position:relative}
+.quick a:hover{transform:translateY(-1px);background:var(--hover)}
+.quick .ico{width:30px;height:30px;border-radius:8px;font-size:14px}
+.quick span.t{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quick a .x{position:absolute;top:2px;right:2px}
+.quick a.over-l{box-shadow:-3px 0 0 var(--accent)}
+
+/* ---------- 分组：固定列，折叠不串列 ---------- */
+.cols{display:flex;gap:14px;align-items:flex-start}
+.col{flex:1 1 0;min-width:0;display:flex;flex-direction:column;gap:14px}
+body.edit .col{min-height:160px;padding-bottom:60px}
+.group{background:var(--card);border-radius:12px;box-shadow:var(--shadow);overflow:hidden}
+.gh{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom:1px solid var(--line);font-weight:600;cursor:pointer;user-select:none}
+.gh .bar{width:3px;height:14px;border-radius:2px;margin-right:8px;display:inline-block;vertical-align:-2px}
+.gh .cnt{font-weight:400;color:var(--muted);font-size:12px;margin-right:2px}
+.gh .chev{display:inline-block;color:var(--muted);font-size:11px;margin-left:6px;transition:transform .15s}
+.group.collapsed .chev{transform:rotate(-90deg)}
+.group.collapsed ul,.group.collapsed .addw{display:none}
+.group.collapsed .gh{border-bottom:0}
+.group ul{list-style:none;margin:0;padding:6px}
+.group li{display:flex;align-items:center;border-radius:7px}
+.group li a.l{flex:1;display:flex;align-items:center;gap:9px;padding:6px 8px;border-radius:7px;min-width:0}
+.group li a.l:hover{background:var(--hover)}
+.group li a.l span:last-child{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ico{position:relative;width:16px;height:16px;flex:none;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;overflow:hidden}
+.ico img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff;opacity:0;transition:opacity .15s}
+
+/* ---------- 编辑模式 ---------- */
+.x,.e,.grip{display:none;border:0;background:none;cursor:pointer;color:var(--muted);font-size:13px;padding:2px 5px;border-radius:5px}
+.x:hover{color:var(--danger);background:var(--hover)} .e:hover{color:var(--accent);background:var(--hover)}
+body.edit .x,body.edit .e{display:inline-block}
+body.edit .grip{display:inline-block;cursor:grab;padding:0 6px 0 0;letter-spacing:-2px}
+body.edit .gh{cursor:grab}
+body.edit .group li a.l{pointer-events:none}
+body.edit .group li,body.edit .quick a{cursor:grab}
+.addw{padding:0 6px 6px}
+.add{display:none;width:100%;border:1px dashed var(--line);background:none;color:var(--muted);border-radius:7px;padding:5px;cursor:pointer;font-size:12px}
+.add:hover{color:var(--accent);border-color:var(--accent)}
+body.edit .add{display:block}
+.editbar{display:none;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;border-radius:10px;background:var(--accent-soft);color:var(--accent);font-size:13px}
+body.edit .editbar{display:flex}
+.editbar span{flex:1}
+.drag{opacity:.35}
+.ph{border:2px dashed var(--accent);background:var(--accent-soft);border-radius:12px;height:44px;flex:none}
+li.over-t{box-shadow:inset 0 2px 0 var(--accent)}
+li.over-b{box-shadow:inset 0 -2px 0 var(--accent)}
+.group.over-g{outline:2px solid var(--accent)}
+
+/* ---------- 弹窗 ---------- */
+.mask{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:50;align-items:center;justify-content:center;padding:20px}
+.mask.show{display:flex}
+.dlg{background:var(--card);border-radius:14px;padding:20px;width:380px;max-width:100%;box-shadow:0 12px 40px rgba(0,0,0,.25)}
+.dlg h3{margin:0 0 6px;font-size:16px}
+.dlg label.f{display:block;font-size:12px;color:var(--muted);margin:12px 0 4px}
+.dlg input[type=text],.dlg input[type=password],.dlg select{width:100%;border:1px solid var(--line);background:var(--bg);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit;outline:none}
+.dlg input[type=text]:focus,.dlg input[type=password]:focus,.dlg select:focus{border-color:var(--accent)}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw input{position:absolute;opacity:0}
+.sw i{display:block;width:22px;height:22px;border-radius:50%;cursor:pointer}
+.sw input:checked+i{outline:2px solid var(--text);outline-offset:2px}
+.dlgF{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.sstat{font-size:13px;color:var(--muted)}
+.sstat b{color:var(--text)}
+.steps{margin:12px 0 0;padding-left:20px;font-size:13px;color:var(--muted)}
+.steps li{margin:5px 0}
+.steps b{color:var(--text);font-weight:600}
+.steps a,.sstat a{color:var(--accent);text-decoration:underline}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#111;color:#fff;
+  padding:8px 16px;border-radius:8px;font-size:13px;opacity:0;transition:.2s;pointer-events:none;z-index:60}
+.toast.show{opacity:.92}
+@media (max-width:640px){.clk .time{font-size:32px}.sep{display:none}.search{margin:26px auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div class="info">
+      <div class="clk"><div class="time" id="tL">--:--</div><div class="sub"><b>本地</b><span id="dL"></span></div></div>
+      <div class="sep"></div>
+      <div class="clk bj"><div class="time" id="tB">--:--</div><div class="sub"><b>北京</b><span id="dB"></span></div></div>
+      <div class="sep"></div>
+      <div class="wx">
+        <button class="wxb" id="wxb" title="点击更换城市"></button>
+        <div class="wpop" id="wpop">
+          <div class="wmode" id="wmode"></div>
+          <div class="row"><input id="wq" placeholder="城市名，如 Barcelona、上海" autocomplete="off"><button class="btn" id="wgo">搜索</button></div>
+          <div id="wres"></div>
+          <button class="btn wopt" id="wauto">🌐 自动定位<small>按网络判断所在城市，不会弹出询问</small></button>
+          <button class="btn wopt" id="wgeo">📍 精确定位一次并记住<small>浏览器只在这一次询问，之后不再问</small></button>
+        </div>
+      </div>
+    </div>
+    <div class="tools">
+      <button class="btn" id="syncBtn" title="多台电脑自动同步">☁ 同步</button>
+      <button class="btn" id="foldBtn">全部折叠</button>
+      <button class="btn" id="editBtn" title="添加、删除、拖动排序">编辑</button>
+      <button class="btn" id="expBtn" title="导出成 JSON 备份">导出</button>
+      <button class="btn" id="impBtn" title="从 JSON 备份恢复">导入</button>
+      <input type="file" id="impFile" accept=".json" hidden>
+    </div>
+  </div>
+
+  <div class="search">
+    <div class="engines" id="engines"></div>
+    <div class="sboxw">
+      <div class="sbox">
+        <input id="q" placeholder="搜索网页，或输入名称快速打开收藏…" autocomplete="off" autofocus>
+        <button class="go" id="go">搜一下</button>
+      </div>
+      <div class="drop" id="drop">
+        <div class="matches" id="matches"></div>
+        <div class="sug" id="sug"></div>
+      </div>
+    </div>
+    <div class="hint"><b>/</b> 聚焦 · <b>Tab</b> 切换引擎 · <b>↑↓</b> 选择收藏或联想词 · <b>Enter</b> 打开 · <b>Shift+Enter</b> 直接搜索</div>
+  </div>
+
+  <div class="quick" id="quick"></div>
+  <div class="editbar">
+    <span>编辑模式：按住分组标题可拖动整个分组（可跨列），网址和快捷图标也能拖动排序。</span>
+    <button class="btn" id="addGroup">＋ 新建分组</button>
+    <button class="btn" id="resetBtn">恢复初始数据</button>
+  </div>
+  <div class="cols" id="groups"></div>
+</div>
+
+<div class="mask" id="mask"><form class="dlg" id="dlg">
+  <h3 id="dlgT"></h3><div id="dlgB"></div>
+  <div class="dlgF"><button type="button" class="btn" id="dlgC">取消</button><button type="submit" class="btn on">确定</button></div>
+</form></div>
+<div class="mask" id="smask"><div class="dlg" style="width:470px">
+  <h3>☁ 多台电脑同步</h3>
+  <div class="sstat" id="sstat"></div>
+  <ol class="steps">
+    <li>打开 <a href="https://github.com/settings/tokens/new?scopes=gist&description=my-nav-sync" target="_blank" rel="noopener">GitHub 的创建令牌页面</a>（已自动勾好 <b>gist</b> 权限），Expiration 选 <b>No expiration</b>，点页面最下方的 <b>Generate token</b>。</li>
+    <li>复制生成的令牌（<b>ghp_</b> 开头，只显示一次），粘贴到下面，点"保存并同步"。</li>
+    <li>其他电脑：打开同一个网页文件，粘贴令牌即可，会自动找到同一份数据。</li>
+  </ol>
+  <label class="f">GitHub 令牌</label>
+  <input type="password" id="sTok" placeholder="ghp_…" autocomplete="off">
+  <label class="f">Gist ID（可留空：自动查找，没有就新建）</label>
+  <input type="text" id="sGist" autocomplete="off">
+  <div class="dlgF"><button type="button" class="btn" id="sOff" style="margin-right:auto">停止同步</button>
+    <button type="button" class="btn" id="sClose">关闭</button><button type="button" class="btn" id="sNow">立即同步</button><button type="button" class="btn on" id="sSave">保存并同步</button></div>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= 初始数据（导出自 shouku123.com/zhanghs，列的分配与原网页一致） ================= */
+const DEFAULT_DATA = {
+  quick: ["哔哩哔哩","知乎","斗鱼","同济邮箱","优酷网","Google 翻译","Chatgpt","同济教务处","腾讯视频","百度网盘","OP.GG","谷歌学术"],
+  groups: [
+    /* 第 1 列 */
+    {id:"g01",col:0,t:"UAB",c:"#dc2626",l:[["SAF","https://uab.deporsite.net/defaultpage"],["SLACK","https://slack.com/"],["ICMAB VPN","https://vpn.icmab.es:10443/"],["谷歌日历","https://calendar.google.com/"],["Nanoquim","http://sct.icmab.es/login"],["Whatsapp","https://web.whatsapp.com/"]]},
+    {id:"g02",col:0,t:"邮箱",c:"#2563eb",l:[["Gmail","https://mail.google.com/"],["ICMAB","https://webmail.icmab.es/"],["Outlook","https://outlook.office.com/mail/"],["同济校友邮箱","http://email.alumni.tongji.edu.cn/"],["QQ邮箱","https://mail.qq.com/"],["163邮箱","https://email.163.com/"],["同济邮箱","https://mail.tongji.edu.cn/"],["华大vpn","https://atrust.hqu.edu.cn/"]]},
+    {id:"g03",col:0,t:"翻译",c:"#ea580c",l:[["Google 翻译","https://translate.google.com/"],["DeepL","https://www.deepl.com/translator"],["百度翻译","https://fanyi.baidu.com/"],["OP.GG","https://sg.op.gg/"]]},
+    {id:"g04",col:0,t:"学校",c:"#0d9488",l:[["同济教务处","https://1.tongji.edu.cn/"],["同济综合服务系统","http://myportal.tongji.edu.cn/"],["同济物理科学与工程学院","http://physics.tongji.edu.cn/"],["同济大学","https://www.tongji.edu.cn/"],["iLabPlus 实验室管理平台","https://s.ilab.cn/login.jsp"],["同济大学研究生院","https://gs.tongji.edu.cn/"]]},
+    {id:"g05",col:0,t:"科学！",c:"#059669",l:[["小木虫论坛","https://muchong.com/bbs/"],["Materials Project","https://next-gen.materialsproject.org/materials"],["txyz.ai - 读文献","https://app.txyz.ai/chat"]]},
+    /* 第 2 列 */
+    {id:"g06",col:1,t:"社区",c:"#db2777",l:[["知乎","https://www.zhihu.com/"],["贴吧","https://tieba.baidu.com/"],["微博","https://d.weibo.com/"],["8264","https://www.8264.com/"],["NGA玩家社区","https://ngabbs.com/"],["小红书","https://www.xiaohongshu.com/explore"]]},
+    {id:"g07",col:1,t:"Ai",c:"#7c3aed",l:[["Gemini","https://gemini.google.com/app"],["Claude","https://claude.ai/"],["Chatgpt","https://chatgpt.com/"],["DeepSeek","https://chat.deepseek.com/"]]},
+    {id:"g08",col:1,t:"查文章",c:"#0891b2",l:[["Web of Science","https://www.webofscience.com/"],["中国知网","https://www.cnki.net/"],["谷歌学术镜像（思谋学术）","https://ac.scmor.com/"],["Sci-Hub 学术导航","https://www.scihub.net.cn/"],["谷歌学术","https://scholar.google.com.hk/?hl=zh-CN"]]},
+    {id:"g09",col:1,t:"GO",c:"#4f46e5",l:[["中国留学基金","https://www.csc.edu.cn/"],["教育部留学服务中心","http://zwfw.cscse.edu.cn/cscse/lxfwzxwsfwdt2020/gplx72/index.html"],["雅思","https://ielts.neea.edu.cn/"],["QS Rankings 2024","https://www.qschina.cn/university-rankings/world-university-rankings/2024"],["新东方雅思机考","https://ieltscat.xdf.cn/mock"]]},
+    {id:"g10",col:1,t:"hhhhh",c:"#a16207",l:[["17吉他和弦图","http://www.17jita.com/chord/"],["中午吃什么","http://chishenme.huangyafei.com/"],["ikuuuvpn","https://ikuuu.me/"],["迷笛考级","http://www.midilevel.com/"],["KOOK（开黑啦）","https://www.kookapp.cn/"]]},
+    /* 第 3 列 */
+    {id:"g11",col:2,t:"视频",c:"#e11d48",l:[["哔哩哔哩","https://www.bilibili.com/"],["优酷网","https://www.youku.com/"],["茶杯狐","https://cupfox.app/"],["YouTube","https://www.youtube.com/"],["腾讯视频","https://v.qq.com/"],["网易云音乐","https://music.163.com/"]]},
+    {id:"g12",col:2,t:"好东西",c:"#ca8a04",l:[["鸠摩搜索（文档）","https://www.jiumodiary.com/"],["夸克网盘","https://pan.quark.cn/"],["百度网盘","https://pan.baidu.com/"],["阿里云盘","https://www.aliyundrive.com/"],["Hiplot 科研绘图","https://hiplot.com.cn/"]]},
+    {id:"g13",col:2,t:"网购",c:"#f97316",l:[["淘宝","https://www.taobao.com/"],["亚马逊西班牙","https://www.amazon.es/"],["天猫","https://www.tmall.com/"],["京东","https://www.jd.com/"],["Aliexpress","https://es.aliexpress.com/"]]},
+    {id:"g14",col:2,t:"直播",c:"#9333ea",l:[["斗鱼","https://www.douyu.com/"],["虎牙","https://www.huya.com/"],["直播吧","https://www.zhibo8.cc/"],["企鹅电竞","https://egame.qq.com/"],["YY LIVE","https://www.yy.com/"]]},
+    {id:"g15",col:2,t:"学科材料",c:"#0284c7",l:[["国家中小学智慧教育平台","https://www.zxx.edu.cn/elecEdu"],["学科网","https://www.zxxk.com/"],["OpenAI 教程","https://edu.eylink.cn/"]]},
+    {id:"g16",col:2,t:"互联网",c:"#525252",l:[["36氪","https://36kr.com/"],["百家","http://baijia.baidu.com/"],["爱范儿","https://www.ifanr.com/"],["雷锋网","https://www.leiphone.com/"],["虎嗅网","https://www.huxiu.com/"]]},
+    /* 第 4 列 */
+    {id:"g17",col:3,t:"工具",c:"#475569",l:[["吉他社","https://www.jitashe.org/"],["秀米","https://xiumi.us/#/"],["快递100","https://www.kuaidi100.com/"],["有道翻译","https://fanyi.youdao.com/"],["草料二维码生成器","https://cli.im/"],["西班牙签证","https://web.blscn.cn/chinese/"]]},
+    {id:"g18",col:3,t:"图片",c:"#16a34a",l:[["wallhaven","https://wallhaven.cc/"],["花瓣","https://huaban.com/"],["包图网","https://ibaotu.com/"],["千库网","https://588ku.com/"],["Unsplash","https://unsplash.com/"]]},
+    {id:"g19",col:3,t:"工具= =",c:"#64748b",l:[["iLovePDF","https://www.ilovepdf.com/"],["SMS-Activate","https://sms-activate.org/cn"],["在线LaTeX公式编辑器","https://latexlive.com/"],["网页ps？(Clipdrop)","https://clipdrop.co/"],["云盘搜索","https://www.xiaobaipan.com/"],["云盘搜索2","https://www.lzpan.com/"],["PDF转换 (Smallpdf)","https://smallpdf.com/"],["ZeroTier","https://www.zerotier.com/"]]},
+    {id:"g20",col:3,t:"新闻",c:"#b91c1c",l:[["今日头条","https://www.toutiao.com/"],["网易新闻","https://news.163.com/"],["凤凰资讯","https://news.ifeng.com/"],["ZAKER","http://www.myzaker.com/"],["腾讯新闻","https://news.qq.com/"]]}
+  ]
+};
+
+const ENGINES = [
+  ["谷歌","https://www.google.com/search?q="],
+  ["必应","https://www.bing.com/search?q="],
+  ["百度","https://www.baidu.com/s?wd="],
+  ["谷歌学术","https://scholar.google.com/scholar?q="],
+  ["Web of Science","https://www.webofscience.com/wos/woscc/basic-search?q="],
+];
+const PALETTE = ["#dc2626","#ea580c","#ca8a04","#16a34a","#0d9488","#0891b2","#2563eb","#4f46e5","#7c3aed","#db2777","#475569"];
+const BASE_COLS = 4;                    // 和原网页一样分 4 列
+/* 默认天气位置（固定城市，不需要定位权限）；点击页面上的天气可以随时更换 */
+const DEFAULT_LOC = {name:"Cerdanyola del Vallès", lat:41.4911, lon:2.1408};
+
+/* ================= 存储 ================= */
+const KEY = "my-nav-data-v1";
+function safeGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function safeSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function parse(s){try{return JSON.parse(s)}catch(e){return null}}
+const clone = o=>JSON.parse(JSON.stringify(o));
+const uid = ()=>"g"+Math.random().toString(36).slice(2,9);
+
+/* 旧版数据没有列信息：按原网页的排布补上 */
+function migrate(d){
+  d.quick = d.quick||[];
+  const def = Object.fromEntries(DEFAULT_DATA.groups.map((g,i)=>[g.t,{col:g.col,i}]));
+  if(d.groups.some(g=>g.col===undefined)){
+    d.groups.forEach((g,i)=>g._o = def[g.t] ? def[g.t].i : 1000+i);
+    d.groups.sort((a,b)=>a._o-b._o);
+    d.groups.forEach(g=>{
+      if(g.col===undefined){
+        if(def[g.t]) g.col=def[g.t].col;
+        else{ const n=Array(BASE_COLS).fill(0); d.groups.forEach(x=>{if(x.col!==undefined)n[x.col]+=2+(x.l||[]).length}); g.col=n.indexOf(Math.min(...n)) }
+      }
+      delete g._o;
+    });
+  }
+  const ids=new Set();
+  d.groups.forEach(g=>{ if(!g.id||ids.has(g.id)) g.id=uid(); ids.add(g.id);
+    g.col=Math.max(0,Math.min(BASE_COLS-1,g.col|0)); g.c=g.c||PALETTE[0]; g.l=g.l||[]; g.t=g.t||"未命名" });
+  return d;
+}
+let data = parse(safeGet(KEY));
+data = migrate(data && data.groups ? data : clone(DEFAULT_DATA));
+let collapsed = new Set(parse(safeGet(KEY+"-collapsed"))||[]);
+collapsed = new Set([...collapsed].map(k=>{ const g=data.groups.find(x=>x.id===k)||data.groups.find(x=>x.t===k); return g&&g.id }).filter(Boolean));
+let engine = +(safeGet(KEY+"-engine")||0); if(!ENGINES[engine]) engine=0;
+/* 同步配置只存在这台电脑上：{token, gist, rev(上次同步的云端版本), dirty(有未上传的修改), mt, fresh} */
+let sync = parse(safeGet(KEY+"-sync")); if(!sync || !sync.token) sync=null;
+function saveSync(){ try{ sync ? localStorage.setItem(KEY+"-sync",JSON.stringify(sync)) : localStorage.removeItem(KEY+"-sync") }catch(e){} }
+function save(){
+  safeSet(KEY, JSON.stringify(data));
+  if(sync){ sync.dirty=true; sync.mt=Date.now(); saveSync(); schedulePush() }
+}
+function saveCollapsed(){ safeSet(KEY+"-collapsed", JSON.stringify([...collapsed])) }
+
+/* ================= 工具函数 ================= */
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
+const G = id=>data.groups.find(g=>g.id===id);
+const isEdit = ()=>document.body.classList.contains("edit");
+function host(u){try{return new URL(u).hostname}catch(e){return ""}}
+function normUrl(u){u=(u||"").trim(); if(u && !/^[a-z]+:\/\//i.test(u)) u="https://"+u; return u}
+function allLinks(){ const m=[]; data.groups.forEach(g=>g.l.forEach(([n,u])=>m.push({n,u,c:g.c}))); return m }
+function findLink(name){ for(const g of data.groups) for(const [n,u] of g.l) if(n===name) return {n,u,c:g.c}; return null }
+// 图标：先显示首字母色块，网站 favicon 加载成功后再盖上去（没网时也不会出现空白）
+function ico(u,name,color){
+  const h=host(u), ch=esc((name||"?").trim().charAt(0).toUpperCase());
+  const img = h ? `<img loading="lazy" draggable="false" src="https://www.google.com/s2/favicons?domain=${h}&sz=64" onload="if(this.naturalWidth>1)this.style.opacity=1" onerror="this.remove()" alt="">` : "";
+  return `<span class="ico" style="background:${color}">${ch}${img}</span>`;
+}
+function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),1800)}
+
+/* ================= 渲染 ================= */
+let N = BASE_COLS;
+function colCount(){ return Math.max(1, Math.min(BASE_COLS, Math.floor(($("#groups").clientWidth+14)/250))) }
+function groupHTML(g){
+  return `<div class="group${collapsed.has(g.id)?" collapsed":""}" data-gid="${g.id}">
+    <div class="gh" draggable="${isEdit()}">
+      <span><span class="grip" title="按住拖动分组">⋮⋮</span><i class="bar" style="background:${g.c}"></i>${esc(g.t)}</span>
+      <span><span class="cnt">${g.l.length}</span>
+        <button class="e" data-act="editGroup" title="改名 / 换颜色">✎</button><button class="x" data-act="delGroup" title="删除分组">✕</button>
+        <span class="chev">▼</span></span>
+    </div>
+    <ul>${g.l.map(([n,u],i)=>`
+      <li draggable="${isEdit()}" data-gid="${g.id}" data-i="${i}">
+        <a class="l" href="${esc(u)}" target="_blank" rel="noopener" title="${esc(u)}">${ico(u,n,g.c)}<span>${esc(n)}</span></a>
+        <button class="e" data-act="star" title="${data.quick.includes(n)?"移出快捷栏":"加到快捷栏"}">${data.quick.includes(n)?"★":"☆"}</button>
+        <button class="e" data-act="editLink" title="编辑">✎</button>
+        <button class="x" data-act="delLink" title="删除">✕</button>
+      </li>`).join("")}</ul>
+    <div class="addw"><button class="add" data-act="addLink">＋ 添加网址</button></div>
+  </div>`;
+}
+function render(){
+  N = colCount();
+  $("#quick").innerHTML = data.quick.map((n,i)=>{
+    const L=findLink(n); if(!L) return "";
+    return `<a href="${esc(L.u)}" target="_blank" rel="noopener" title="${esc(L.n)}" data-q="${i}" draggable="${isEdit()}">${ico(L.u,L.n,L.c)}<span class="t">${esc(L.n)}</span><button class="x" data-act="unquick" title="移出快捷栏">✕</button></a>`;
+  }).join("");
+  // 每个分组固定属于某一列；折叠/展开只影响它下面的分组，不会让别的分组换列
+  const cols = Array.from({length:N},()=>[]);
+  data.groups.forEach(g=>cols[g.col % N].push(g));
+  $("#groups").innerHTML = cols.map((c,ci)=>`<div class="col" data-c="${ci}">${c.map(groupHTML).join("")}</div>`).join("");
+  const all = data.groups.length>0 && data.groups.every(g=>collapsed.has(g.id));
+  $("#foldBtn").textContent = all ? "全部展开" : "全部折叠";
+}
+function renderEngines(){
+  $("#engines").innerHTML = ENGINES.map(([n],i)=>`<button class="${i===engine?"on":""}" data-en="${i}">${n}</button>`).join("");
+}
+window.addEventListener("resize",()=>{ if(colCount()!==N) render() });
+
+/* ================= 搜索 + 联想词 ================= */
+let hits=[], sugs=[], sel=-1, typed="", sugSeq=0, sugTimer=0;
+const SUG_SRC=["google","bing","baidu","google","google"];      // 与 ENGINES 的顺序对应：联想词跟随当前搜索引擎
+function goSearch(q){
+  q=(q||"").trim(); if(!q) return;
+  if(/^https?:\/\//i.test(q) || (/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(q) && !q.includes(" "))){ window.open(normUrl(q),"_blank"); return }
+  window.open(ENGINES[engine][1]+encodeURIComponent(q),"_blank");
+}
+function renderDrop(){
+  $("#matches").innerHTML = hits.map((L,i)=>`<a href="${esc(L.u)}" target="_blank" rel="noopener" class="${i===sel?"sel":""}">${ico(L.u,L.n,L.c)}${esc(L.n)}</a>`).join("");
+  $("#matches").classList.toggle("show",hits.length>0);
+  const q=typed.toLowerCase();
+  $("#sug").innerHTML = sugs.map((t,i)=>{
+    const h = q && t.toLowerCase().startsWith(q) ? esc(t.slice(0,typed.length))+"<b>"+esc(t.slice(typed.length))+"</b>" : esc(t);
+    return `<div data-s="${i}" class="${hits.length+i===sel?"sel":""}"><span>${h}</span></div>` }).join("");
+  $("#drop").classList.toggle("show", (hits.length>0||sugs.length>0) && document.activeElement===$("#q"));
+}
+function onInput(){
+  typed=$("#q").value.trim(); clearTimeout(sugTimer);
+  if(!typed){ hits=[]; sugs=[]; sel=-1; sugSeq++; renderDrop(); return }
+  const q=typed.toLowerCase(), seen=new Set();
+  hits=allLinks().filter(L=>{ if(seen.has(L.u))return false; const ok=L.n.toLowerCase().includes(q)||host(L.u).includes(q); if(ok)seen.add(L.u); return ok}).slice(0,8);
+  sel = hits.length ? 0 : -1;
+  renderDrop(); sugTimer=setTimeout(askSug,120);
+}
+function moveSel(d){
+  const n=hits.length+sugs.length; if(!n) return;
+  sel+=d; if(sel>=n) sel=-1; if(sel<-1) sel=n-1;
+  $("#q").value = sel>=hits.length ? sugs[sel-hits.length] : typed;      // 选到联想词时填进输入框
+  renderDrop();
+}
+function setEngine(i){ engine=i; safeSet(KEY+"-engine",engine); renderEngines(); if(typed) askSug() }
+$("#q").addEventListener("input",onInput);
+$("#q").addEventListener("focus",renderDrop);
+$("#q").addEventListener("blur",()=>$("#drop").classList.remove("show"));
+$("#q").addEventListener("keydown",e=>{
+  if(e.isComposing) return;                       // 输入法选字时不抢按键
+  if(e.key==="Tab"){e.preventDefault(); setEngine((engine+(e.shiftKey?ENGINES.length-1:1))%ENGINES.length); return}
+  if(e.key==="ArrowDown"){e.preventDefault();moveSel(1);return}
+  if(e.key==="ArrowUp"){e.preventDefault();moveSel(-1);return}
+  if(e.key==="Escape"){$("#q").value="";onInput();return}
+  if(e.key==="Enter"){ if(!e.shiftKey && sel>=0 && sel<hits.length) window.open(hits[sel].u,"_blank"); else goSearch($("#q").value) }
+});
+$("#drop").addEventListener("mousedown",e=>e.preventDefault());           // 点下拉框时不让输入框失焦
+$("#sug").addEventListener("click",e=>{ const d=e.target.closest("[data-s]"); if(!d) return;
+  const t=sugs[+d.dataset.s]; $("#q").value=t; goSearch(t); onInput() });
+$("#go").onclick=()=>goSearch($("#q").value);
+$("#engines").onclick=e=>{const b=e.target.closest("[data-en]"); if(!b)return; setEngine(+b.dataset.en); $("#q").focus()};
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ closeForm(); $("#smask").classList.remove("show"); $("#wpop").classList.remove("show") }
+  if(e.key==="/" && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)){e.preventDefault();$("#q").focus()}
+});
+
+/* 联想词来自谷歌 / 必应 / 百度的公开接口。这些接口只能以"加载脚本"的方式调用，
+   所以放进一个隔离的沙盒 iframe 里执行：它读不到本页面的任何数据（包括同步令牌），只能把词条列表传回来。 */
+const sugFrame=document.createElement("iframe");
+sugFrame.setAttribute("sandbox","allow-scripts"); sugFrame.style.display="none";
+sugFrame.srcdoc=`<script>
+const U={google:q=>"https://suggestqueries.google.com/complete/search?client=chrome&hl=zh-CN&q="+q+"&callback=",
+  bing:q=>"https://api.bing.com/qsonhs.aspx?type=cb&q="+q+"&cb=",
+  baidu:q=>"https://www.baidu.com/sugrec?prod=pc&ie=utf-8&wd="+q+"&cb="};
+const P={google:d=>d[1]||[],
+  bing:d=>[].concat.apply([],(((d.AS||{}).Results)||[]).map(r=>(r.Suggests||[]).map(x=>x.Txt))),
+  baidu:d=>(d.g||[]).map(x=>x.q)};
+let n=0;
+function one(src,q){ return new Promise((res,rej)=>{
+  const cb="__s"+(++n), el=document.createElement("script");
+  const done=()=>{ clearTimeout(t); self[cb]=()=>{}; el.remove() };
+  const t=setTimeout(()=>{ done(); rej() },2500);
+  self[cb]=d=>{ done(); try{ res(P[src](d).filter(x=>typeof x==="string").slice(0,8)) }catch(e){ rej() } };
+  el.onerror=()=>{ done(); rej() };
+  el.src=U[src](encodeURIComponent(q))+cb; document.head.appendChild(el) }) }
+addEventListener("message",async e=>{
+  const m=e.data||{}; let list=[];
+  for(const src of (m.order||[])){ try{ list=await one(src,m.q); if(list.length) break }catch(_){} }
+  parent.postMessage({sug:1,id:m.id,list},"*") });
+<\/script>`;
+document.body.appendChild(sugFrame);
+function askSug(){
+  if(!typed) return; const id=++sugSeq, first=SUG_SRC[engine]||"google";
+  const order=[first].concat(["google","bing","baidu"].filter(x=>x!==first));   // 首选接口连不上时自动换下一个
+  try{ sugFrame.contentWindow.postMessage({id,q:typed,order},"*") }catch(e){}
+}
+window.addEventListener("message",e=>{
+  const m=e.data; if(e.source!==sugFrame.contentWindow || !m || !m.sug || m.id!==sugSeq) return;
+  if(sel>=hits.length && sel>=0) return;           // 正在用方向键选联想词时不打断
+  const q=typed.toLowerCase();
+  sugs=(Array.isArray(m.list)?m.list:[]).filter(t=>typeof t==="string" && t.toLowerCase()!==q).slice(0,8);
+  renderDrop();
+});
+
+/* ================= 弹窗表单 ================= */
+let formCb=null;
+function openForm(title,fields,cb){
+  $("#dlgT").textContent=title;
+  $("#dlgB").innerHTML=fields.map(f=>{
+    if(f.type==="color"){ const cs=[...new Set([f.value,...PALETTE])];
+      return `<label class="f">${f.label}</label><div class="sw">${cs.map(c=>`<label><input type="radio" name="${f.k}" value="${c}" ${c===f.value?"checked":""}><i style="background:${c}"></i></label>`).join("")}</div>` }
+    if(f.type==="select") return `<label class="f">${f.label}</label><select name="${f.k}">${f.options.map(([v,t])=>`<option value="${esc(v)}" ${v===f.value?"selected":""}>${esc(t)}</option>`).join("")}</select>`;
+    return `<label class="f">${f.label}</label><input type="text" name="${f.k}" value="${esc(f.value||"")}" placeholder="${esc(f.placeholder||"")}" autocomplete="off">`;
+  }).join("");
+  formCb=cb; $("#mask").classList.add("show");
+  const first=$("#dlgB input[type=text]"); if(first){first.focus();first.select()}
+}
+function closeForm(){ $("#mask").classList.remove("show"); formCb=null }
+$("#dlg").onsubmit=e=>{ e.preventDefault(); if(!formCb) return;
+  const v={}; new FormData(e.target).forEach((val,k)=>v[k]=String(val).trim());
+  if(formCb(v)!==false) closeForm() };
+$("#dlgC").onclick=closeForm;
+$("#mask").addEventListener("mousedown",e=>{ if(e.target===$("#mask")) closeForm() });
+const groupOptions = ()=>data.groups.map(g=>[g.id,g.t]);
+
+/* ================= 编辑操作 ================= */
+$("#editBtn").onclick=()=>{ const on=document.body.classList.toggle("edit"); $("#editBtn").classList.toggle("on",on); $("#editBtn").textContent=on?"完成":"编辑"; render();
+  if(on) syncNow(true) };   // 开始编辑前先拿到其他电脑的最新修改
+$("#foldBtn").onclick=()=>{ const all=data.groups.every(g=>collapsed.has(g.id));
+  collapsed = all ? new Set() : new Set(data.groups.map(g=>g.id)); saveCollapsed(); render() };
+
+document.addEventListener("click",e=>{
+  // 编辑模式下点链接不跳转
+  if(isEdit() && e.target.closest(".quick a, .group a.l") && !e.target.closest("button")) e.preventDefault();
+  const b=e.target.closest("[data-act]");
+  if(!b){
+    const gh=e.target.closest(".gh");
+    if(gh){ const id=gh.parentNode.dataset.gid; collapsed.has(id)?collapsed.delete(id):collapsed.add(id); saveCollapsed(); render() }
+    return;
+  }
+  e.preventDefault(); e.stopPropagation();
+  const act=b.dataset.act;
+  if(act==="unquick"){ data.quick.splice(+b.closest("a").dataset.q,1); save(); render(); return }
+  const grpEl=b.closest(".group"), g=G(grpEl.dataset.gid), li=b.closest("li"), i=li?+li.dataset.i:-1;
+  if(act==="star"){ const n=g.l[i][0], k=data.quick.indexOf(n); k>=0?data.quick.splice(k,1):data.quick.push(n); save(); render(); toast(k>=0?"已移出快捷栏":"已加入快捷栏") }
+  else if(act==="delLink"){ if(!confirm(`删除「${g.l[i][0]}」？`))return; const n=g.l[i][0]; g.l.splice(i,1);
+    if(!findLink(n)){ const k=data.quick.indexOf(n); if(k>=0) data.quick.splice(k,1) } save(); render() }
+  else if(act==="editLink"){ const L=g.l[i];
+    openForm("编辑网址",[{k:"n",label:"名称",value:L[0]},{k:"u",label:"网址",value:L[1]},{k:"g",label:"所在分组",type:"select",value:g.id,options:groupOptions()}],v=>{
+      if(!v.n||!v.u) return false;
+      const qi=data.quick.indexOf(L[0]); if(qi>=0) data.quick[qi]=v.n;
+      const item=[v.n,normUrl(v.u)];
+      if(v.g===g.id) g.l[i]=item; else{ g.l.splice(i,1); G(v.g).l.push(item) }
+      save(); render() }) }
+  else if(act==="addLink"){
+    openForm(`添加网址到「${g.t}」`,[{k:"u",label:"网址",placeholder:"https://…"},{k:"n",label:"名称（留空则用域名）"}],v=>{
+      if(!v.u) return false; const u=normUrl(v.u);
+      g.l.push([v.n||host(u).replace(/^www\./,"")||u, u]); save(); render() }) }
+  else if(act==="editGroup"){
+    openForm("编辑分组",[{k:"t",label:"分组名称",value:g.t},{k:"c",label:"颜色",type:"color",value:g.c}],v=>{
+      if(!v.t) return false; g.t=v.t; g.c=v.c||g.c; save(); render() }) }
+  else if(act==="delGroup"){ if(!confirm(`删除分组「${g.t}」及其中 ${g.l.length} 个网址？`))return;
+    data.groups.splice(data.groups.indexOf(g),1); collapsed.delete(g.id); saveCollapsed(); save(); render() }
+});
+$("#addGroup").onclick=()=>openForm("新建分组",[{k:"t",label:"分组名称"},{k:"c",label:"颜色",type:"color",value:PALETTE[data.groups.length%PALETTE.length]}],v=>{
+  if(!v.t) return false; data.groups.unshift({id:uid(),col:0,t:v.t,c:v.c,l:[]}); save(); render(); toast("已创建，在第一列最上面；可拖到任意位置") });
+$("#resetBtn").onclick=()=>{ if(!confirm("恢复成最初导入的数据？你做过的修改会丢失（建议先导出备份）。"))return;
+  data=migrate(clone(DEFAULT_DATA)); collapsed=new Set(); saveCollapsed(); save(); render(); toast("已恢复") };
+
+/* ================= 拖动：分组（跨列）/ 网址（跨组）/ 快捷图标 ================= */
+let drag=null, dropT=null;
+const ph=document.createElement("div"); ph.className="ph";
+function clearMarks(){ document.querySelectorAll(".over-t,.over-b,.over-g,.over-l").forEach(x=>x.classList.remove("over-t","over-b","over-g","over-l")) }
+document.addEventListener("dragstart",e=>{
+  if(!isEdit() || !e.target.closest) return;
+  const li=e.target.closest(".group li"), gh=e.target.closest(".gh"), qa=e.target.closest(".quick a");
+  if(li) drag={type:"link",gid:li.dataset.gid,i:+li.dataset.i,el:li};
+  else if(gh){ const grp=gh.parentNode, r=grp.getBoundingClientRect();
+    drag={type:"group",gid:grp.dataset.gid,el:grp};
+    e.dataTransfer.setDragImage(grp,e.clientX-r.left,e.clientY-r.top) }
+  else if(qa) drag={type:"quick",q:+qa.dataset.q,el:qa};
+  else return;
+  e.dataTransfer.effectAllowed="move"; e.dataTransfer.setData("text/plain","");
+  const el=drag.el; setTimeout(()=>el.classList.add("drag"));
+});
+document.addEventListener("dragover",e=>{
+  if(!drag) return;
+  if(drag.type==="group"){
+    const col=[...document.querySelectorAll(".col")].find(c=>{const r=c.getBoundingClientRect(); return e.clientX>=r.left-7 && e.clientX<=r.right+7});
+    if(!col) return; e.preventDefault();
+    const next=[...col.querySelectorAll(".group")].filter(x=>x!==drag.el).find(x=>{const r=x.getBoundingClientRect(); return e.clientY<r.top+r.height/2});
+    if(next){ if(ph.parentNode!==col || ph.nextElementSibling!==next) col.insertBefore(ph,next) }
+    else if(ph.parentNode!==col || col.lastElementChild!==ph) col.appendChild(ph);
+  }else if(drag.type==="link"){
+    const grp=e.target.closest(".group"); if(!grp) return; e.preventDefault(); clearMarks();
+    const li=e.target.closest(".group li");
+    if(li){ const r=li.getBoundingClientRect(), after=e.clientY>r.top+r.height/2;
+      li.classList.add(after?"over-b":"over-t"); dropT={gid:grp.dataset.gid,i:+li.dataset.i+(after?1:0)} }
+    else{ grp.classList.add("over-g"); dropT={gid:grp.dataset.gid,i:G(grp.dataset.gid).l.length} }
+  }else{
+    const qa=e.target.closest(".quick a"); if(!qa) return; e.preventDefault(); clearMarks();
+    qa.classList.add("over-l"); dropT={q:+qa.dataset.q};
+  }
+});
+document.addEventListener("drop",e=>{
+  if(!drag) return; e.preventDefault();
+  if(drag.type==="group" && ph.parentNode){
+    const rc=+ph.parentNode.dataset.c, isG=x=>x && x.classList.contains("group") && x!==drag.el;
+    let nx=ph.nextElementSibling; while(nx && !isG(nx)) nx=nx.nextElementSibling;
+    let pv=ph.previousElementSibling; while(pv && !isG(pv)) pv=pv.previousElementSibling;
+    const g=G(drag.gid), arr=data.groups, gn=nx&&G(nx.dataset.gid), gp=pv&&G(pv.dataset.gid);
+    arr.splice(arr.indexOf(g),1);
+    g.col = N===BASE_COLS ? rc : (gn ? gn.col : gp ? gp.col : rc);
+    if(gn) arr.splice(arr.indexOf(gn),0,g); else if(gp) arr.splice(arr.indexOf(gp)+1,0,g); else arr.push(g);
+  }else if(drag.type==="link" && dropT && dropT.gid){
+    const sg=G(drag.gid), tg=G(dropT.gid), item=sg.l[drag.i]; let ti=dropT.i;
+    sg.l.splice(drag.i,1); if(sg===tg && drag.i<ti) ti--; tg.l.splice(ti,0,item);
+  }else if(drag.type==="quick" && dropT && dropT.q!==undefined){
+    const [n]=data.quick.splice(drag.q,1); data.quick.splice(dropT.q,0,n);
+  }
+  ph.remove(); drag=null; dropT=null; save(); render();
+});
+document.addEventListener("dragend",()=>{ ph.remove(); clearMarks(); document.querySelectorAll(".drag").forEach(x=>x.classList.remove("drag")); drag=null; dropT=null });
+
+/* ================= 导入导出 ================= */
+$("#expBtn").onclick=()=>{
+  const blob=new Blob([JSON.stringify(data,null,1)],{type:"application/json"});
+  const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+  a.download="我的导航备份-"+new Date().toISOString().slice(0,10)+".json"; a.click(); URL.revokeObjectURL(a.href);
+};
+$("#impBtn").onclick=()=>$("#impFile").click();
+$("#impFile").onchange=e=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader();
+  r.onload=()=>{ const d=parse(r.result); if(!d||!Array.isArray(d.groups)){ alert("文件格式不对"); return }
+    data=migrate(d); save(); render(); toast("导入成功") };
+  r.readAsText(f); e.target.value="" };
+
+/* ================= 多台电脑同步（GitHub Gist） ================= */
+const SYNC_FILE="my-nav.json";
+let syncState="off", syncMsg="", lastSync=0, syncing=false, syncAgain=false, pushTimer=0;
+function setSyncState(st,msg){
+  syncState=st; syncMsg=msg||""; const b=$("#syncBtn");
+  b.textContent={off:"☁ 同步",ok:"☁ 已同步",busy:"☁ 同步中…",wait:"☁ 待上传",err:"☁ 同步失败"}[st];
+  b.classList.toggle("warn",st==="err"); b.title = st==="err" ? syncMsg : "多台电脑自动同步";
+  renderSyncStat();
+}
+function renderSyncStat(){
+  const t={ok:"已同步",busy:"同步中…",wait:"有修改等待上传",err:"同步失败 — "+esc(syncMsg)}[syncState];
+  $("#sstat").innerHTML = !sync ? "当前：<b>未开启</b>。开启后，收藏和分组的修改会自动同步到你所有的电脑。"
+    : `当前：<b>${t}</b>` + (lastSync?` · 上次同步 ${new Date(lastSync).toLocaleTimeString("zh-CN",{hour:"2-digit",minute:"2-digit"})}`:"")
+      + (sync.gist?` · <a href="https://gist.github.com/${esc(sync.gist)}" target="_blank" rel="noopener">查看云端数据</a>`:"");
+  $("#sOff").style.display=$("#sNow").style.display = sync ? "" : "none";
+}
+function schedulePush(){ setSyncState("wait"); clearTimeout(pushTimer); pushTimer=setTimeout(()=>syncNow(true),1500) }
+async function gh(path,method,body){
+  const c=new AbortController(), t=setTimeout(()=>c.abort(),15000);
+  try{
+    const r=await fetch("https://api.github.com"+path,{method:method||"GET",cache:"no-store",signal:c.signal,
+      headers:Object.assign({Authorization:"Bearer "+sync.token,Accept:"application/vnd.github+json"}, body?{"Content-Type":"application/json"}:{}),
+      body:body?JSON.stringify(body):undefined});
+    if(!r.ok){ const e=new Error("HTTP "+r.status); e.status=r.status; throw e }
+    return await r.json();
+  }finally{ clearTimeout(t) }
+}
+function syncErr(e){ const c=e&&e.status;
+  return c===401 ? "令牌无效或已过期，请重新生成后再填一次"
+       : c===403 ? "令牌没有 gist 权限，或请求过于频繁"
+       : c===404 ? "找不到这份云端数据（Gist ID 不对，或已被删除）"
+       : "连不上 GitHub，联网后会自动重试" }
+async function readRemote(){
+  const g=await gh("/gists/"+sync.gist), f=g.files&&g.files[SYNC_FILE]; if(!f) return null;
+  let txt=f.content; if(f.truncated) txt=await (await fetch(f.raw_url,{cache:"no-store"})).text();
+  const o=parse(txt); return o && o.data && Array.isArray(o.data.groups) ? o : null;
+}
+async function writeRemote(){
+  const mt=sync.mt, body={v:1,updated:Date.now(),data};                    // 只上传收藏数据，不含令牌
+  const files={[SYNC_FILE]:{content:JSON.stringify(body,null,1)}};
+  if(sync.gist) await gh("/gists/"+sync.gist,"PATCH",{files});
+  else sync.gist=(await gh("/gists","POST",{description:"我的导航 · 同步数据（由导航页自动维护）",public:false,files})).id;
+  sync.rev=body.updated; sync.dirty = sync.mt!==mt; saveSync();           // 上传期间又有新修改的话，保持"待上传"
+}
+function applyRemote(r){ data=migrate(r.data); safeSet(KEY,JSON.stringify(data)); sync.rev=r.updated; sync.dirty=false; saveSync(); render() }
+/* bg=true 表示后台自动触发：正在拖动或填表单时先不打扰 */
+async function syncNow(bg){
+  if(!sync) return;
+  if(bg && (drag || $("#mask").classList.contains("show"))){ if(sync.dirty) schedulePush(); return }
+  if(syncing){ syncAgain=true; return }
+  syncing=true; clearTimeout(pushTimer); setSyncState("busy");
+  try{
+    if(!sync.gist){ const g=(await gh("/gists?per_page=100")).find(x=>x.files && x.files[SYNC_FILE]); if(g) sync.gist=g.id }
+    const r = sync.gist ? await readRemote() : null;
+    if(!r) await writeRemote();                                            // 云端还没有数据：上传这台电脑的
+    else if(sync.fresh){                                                   // 这台电脑第一次连接，云端已有数据
+      const when=new Date(r.updated).toLocaleString("zh-CN");
+      if(confirm(`云端已经有一份导航数据（${r.data.groups.length} 个分组，更新于 ${when}）。\n\n确定 = 使用云端数据（替换这台电脑上现有的）\n取消 = 用这台电脑的数据覆盖云端`)) applyRemote(r);
+      else await writeRemote();
+    }
+    else if(r.updated!==sync.rev){                                         // 其他电脑改过
+      if(sync.dirty && !confirm("另一台电脑也修改了导航，和这台电脑还没上传的修改冲突了。\n\n确定 = 使用云端的版本（放弃这台电脑刚才的修改）\n取消 = 保留这台电脑的版本并覆盖云端")) await writeRemote();
+      else{ applyRemote(r); toast("已同步其他电脑的修改") }
+    }
+    else if(sync.dirty) await writeRemote();
+    delete sync.fresh; saveSync(); lastSync=Date.now(); setSyncState(sync.dirty?"wait":"ok");
+  }catch(e){ setSyncState("err",syncErr(e)) }
+  finally{ syncing=false; if(syncAgain){ syncAgain=false; setTimeout(()=>syncNow(bg),300) } }
+}
+$("#syncBtn").onclick=()=>{ $("#sTok").value=sync?sync.token:""; $("#sGist").value=(sync&&sync.gist)||""; renderSyncStat(); $("#smask").classList.add("show") };
+$("#sClose").onclick=()=>$("#smask").classList.remove("show");
+$("#smask").addEventListener("mousedown",e=>{ if(e.target===$("#smask")) $("#smask").classList.remove("show") });
+$("#sNow").onclick=()=>syncNow();
+$("#sSave").onclick=()=>{
+  const tok=$("#sTok").value.trim(), raw=$("#sGist").value.trim(), m=raw.match(/[0-9a-f]{20,}/i);
+  if(!tok){ toast("请先粘贴令牌"); return }
+  if(raw && !m){ toast("Gist ID 格式不对，可以直接留空"); return }
+  if(syncing){ toast("正在同步，请稍等"); return }
+  const gid=m?m[0]:"";
+  if(sync && (!gid || gid===sync.gist)) sync.token=tok;                    // 只是换了令牌
+  else sync={token:tok,gist:gid,fresh:true,dirty:false};
+  saveSync(); syncNow();
+};
+$("#sOff").onclick=()=>{
+  if(syncing){ toast("正在同步，请稍等"); return }
+  if(!confirm("停止同步，并从这台电脑上删除令牌？\n云端数据和这台电脑上的数据都会保留。")) return;
+  sync=null; saveSync(); clearTimeout(pushTimer); lastSync=0; setSyncState("off"); $("#sTok").value=""; $("#sGist").value="";
+};
+/* 自动同步的时机：打开页面、切回这个标签页、恢复联网、每 5 分钟、开始编辑前、每次修改后 1.5 秒 */
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden && Date.now()-lastSync>30e3) syncNow(true) });
+window.addEventListener("online",()=>syncNow(true));
+setInterval(()=>{ if(!document.hidden) syncNow(true) },5*60e3);
+setSyncState(sync?(sync.dirty?"wait":"ok"):"off"); syncNow(true);
+
+/* ================= 时钟：本地 + 北京 ================= */
+function fmt(d,tz){
+  const o=tz?{timeZone:tz}:{}, P={};
+  new Intl.DateTimeFormat("zh-CN",{...o,hour:"2-digit",minute:"2-digit",hourCycle:"h23",month:"numeric",day:"numeric",weekday:"long"})
+    .formatToParts(d).forEach(x=>P[x.type]=x.value);
+  return [`${P.hour}:${P.minute}`, `${P.month}月${P.day}日 ${P.weekday}`];
+}
+function tick(){
+  const d=new Date(), [t1,d1]=fmt(d), [t2,d2]=fmt(d,"Asia/Shanghai");
+  if($("#tL").textContent!==t1){ $("#tL").textContent=t1; $("#dL").textContent=d1 }
+  if($("#tB").textContent!==t2){ $("#tB").textContent=t2; $("#dB").textContent=d2 }
+}
+tick(); setInterval(tick,1000);
+
+/* ================= 天气（Open-Meteo，免费、无需密钥） ================= */
+const WX={0:["晴","☀️","🌙"],1:["晴间多云","🌤️","🌙"],2:["多云","⛅","☁️"],3:["阴","☁️"],45:["雾","🌫️"],48:["雾凇","🌫️"],
+  51:["小毛毛雨","🌦️"],53:["毛毛雨","🌦️"],55:["大毛毛雨","🌧️"],56:["冻毛毛雨","🌧️"],57:["冻毛毛雨","🌧️"],
+  61:["小雨","🌧️"],63:["中雨","🌧️"],65:["大雨","🌧️"],66:["冻雨","🌧️"],67:["冻雨","🌧️"],
+  71:["小雪","🌨️"],73:["中雪","🌨️"],75:["大雪","❄️"],77:["雪粒","🌨️"],80:["阵雨","🌦️"],81:["阵雨","🌧️"],82:["强阵雨","⛈️"],
+  85:["阵雪","🌨️"],86:["强阵雪","❄️"],95:["雷暴","⛈️"],96:["雷暴伴冰雹","⛈️"],99:["强雷暴伴冰雹","⛈️"]};
+let loc = parse(safeGet(KEY+"-loc")) || DEFAULT_LOC;
+const locKey = ()=>loc.lat.toFixed(3)+","+loc.lon.toFixed(3);
+function showWx(d){
+  const c=d.current, w=WX[c.weather_code]||["—","🌡️"], icon=(!c.is_day&&w[2])||w[1], r=Math.round;
+  const range = d.daily ? ` · ${r(d.daily.temperature_2m_min[0])}°~${r(d.daily.temperature_2m_max[0])}°` : "";
+  $("#wxb").innerHTML=`<span class="wi">${icon}</span><span><div class="temp">${r(c.temperature_2m)}°C<small>${w[0]}</small></div>
+    <div class="sub">${esc(loc.name)}${range} · 体感 ${r(c.apparent_temperature)}°</div></span>`;
+  $("#wxb").title=`湿度 ${c.relative_humidity_2m}% · 风速 ${r(c.wind_speed_10m)} km/h\n点击更换城市`;
+}
+function wxMsg(t){ $("#wxb").innerHTML=`<span class="wi">🌡️</span><span><div class="sub" style="margin:0">${esc(loc.name)}</div><div class="sub">${t}</div></span>` }
+async function getJSON(url,ms){
+  const c=new AbortController(), t=setTimeout(()=>c.abort(),ms||7000);
+  try{ const r=await fetch(url,{signal:c.signal}); if(!r.ok) throw 0; return await r.json() } finally{ clearTimeout(t) }
+}
+/* 按网络（IP）判断所在城市：不需要浏览器的定位权限，所以不会弹窗 */
+async function ipLocate(){
+  try{ const d=await getJSON("https://get.geojs.io/v1/ip/geo.json"), lat=+d.latitude, lon=+d.longitude;
+    if(isFinite(lat)&&isFinite(lon)&&(lat||lon)) return {name:d.city||d.region||d.country||"当前位置",lat,lon} }catch(e){}
+  try{ const d=await getJSON("https://ipwho.is/?fields=success,city,region,latitude,longitude");
+    if(d.success) return {name:d.city||d.region||"当前位置",lat:+d.latitude,lon:+d.longitude} }catch(e){}
+  return null;
+}
+/* 自动模式：最多每 30 分钟重新判断一次；位置没明显变化（约 10 km 内）就不动 */
+async function refreshAuto(){
+  if(Date.now()-(+safeGet(KEY+"-ipt")||0) < 30*60e3) return;
+  const l=await ipLocate(); if(!l || !loc.auto) return;
+  safeSet(KEY+"-ipt",Date.now());
+  if(Math.abs(l.lat-loc.lat)<0.1 && Math.abs(l.lon-loc.lon)<0.1) return;
+  loc={...l,auto:true}; safeSet(KEY+"-loc",JSON.stringify(loc));
+}
+let wxBusy=false;
+async function loadWeather(force){
+  if(wxBusy) return; wxBusy=true;
+  try{
+    let c=parse(safeGet(KEY+"-wx")), ok=!!c && c.k===locKey();
+    if(ok) showWx(c.d); else wxMsg("天气加载中…");
+    if(loc.auto){ const k=locKey(); await refreshAuto();
+      if(locKey()!==k){ c=parse(safeGet(KEY+"-wx")); ok=!!c && c.k===locKey(); if(ok) showWx(c.d); else wxMsg("天气加载中…") } }
+    if(ok && !force && Date.now()-c.t<15*60e3) return;
+    try{
+      const d=await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}&current=temperature_2m,apparent_temperature,weather_code,is_day,relative_humidity_2m,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=1`,10000);
+      if(!d.current) throw 0;
+      safeSet(KEY+"-wx",JSON.stringify({k:locKey(),t:Date.now(),d})); showWx(d);
+    }catch(e){ if(!ok) wxMsg("天气暂时获取不到（需要联网）") }
+  }finally{ wxBusy=false }
+}
+function setLoc(l){ loc=l; safeSet(KEY+"-loc",JSON.stringify(l)); $("#wpop").classList.remove("show"); wxBusy=false; loadWeather(true) }
+function showMode(){ $("#wmode").innerHTML=`当前：<b>${esc(loc.name)}</b> · ${loc.auto?"自动定位（按网络）":"固定位置"}` }
+$("#wxb").onclick=()=>{ const p=$("#wpop"); p.classList.toggle("show"); if(p.classList.contains("show")){ showMode(); $("#wres").innerHTML=""; $("#wq").value=""; $("#wq").focus() } };
+document.addEventListener("mousedown",e=>{ if(!e.target.closest(".wx")) $("#wpop").classList.remove("show") });
+async function searchCity(){
+  const q=$("#wq").value.trim(); if(!q) return; $("#wres").innerHTML="<small>搜索中…</small>";
+  try{
+    const d=await getJSON(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(q)}&count=6&language=zh`);
+    const rs=d.results||[]; if(!rs.length){ $("#wres").innerHTML="<small>没找到，换个写法试试（可用英文或拼音）</small>"; return }
+    $("#wres").innerHTML=rs.map((x,i)=>`<button data-i="${i}">${esc(x.name)} <small>${esc([x.admin1,x.country].filter(Boolean).join(" · "))}</small></button>`).join("");
+    $("#wres").onclick=e=>{ const b=e.target.closest("button"); if(!b)return; const x=rs[+b.dataset.i]; setLoc({name:x.name,lat:x.latitude,lon:x.longitude}) };
+  }catch(e){ $("#wres").innerHTML="<small>搜索失败（需要联网）</small>" }
+}
+$("#wgo").onclick=searchCity;
+$("#wq").addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); searchCity() } });
+$("#wauto").onclick=async()=>{
+  $("#wres").innerHTML="<small>正在判断所在城市…</small>";
+  const l=await ipLocate();
+  if(!l){ $("#wres").innerHTML="<small>自动定位失败（需要联网），可以先用城市名搜索</small>"; return }
+  safeSet(KEY+"-ipt",Date.now()); setLoc({...l,auto:true}); toast("已切换为自动定位："+l.name);
+};
+/* 浏览器精确定位：只在点这个按钮时请求一次，结果存成固定位置，之后打开页面都不会再询问 */
+$("#wgeo").onclick=()=>{
+  if(!navigator.geolocation){ toast("这个浏览器不支持定位"); return }
+  $("#wres").innerHTML="<small>等待浏览器授权…</small>";
+  navigator.geolocation.getCurrentPosition(async p=>{
+    const lat=+p.coords.latitude.toFixed(2), lon=+p.coords.longitude.toFixed(2); let name="当前位置";   // 保留两位小数（约 1 km），看天气足够
+    try{ const d=await getJSON(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=zh`,5000); name=d.city||d.locality||name }catch(e){}
+    setLoc({name,lat,lon}); toast("已记住「"+name+"」，以后不会再询问位置");
+  }, ()=>{ $("#wres").innerHTML="<small>定位失败或被拒绝，可以改用自动定位或城市名搜索</small>" }, {timeout:10000,maximumAge:600000});
+};
+loadWeather(); setInterval(()=>loadWeather(),5*60e3);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) loadWeather() });
+
+renderEngines(); render();
+</script>
+</body>
+</html>
