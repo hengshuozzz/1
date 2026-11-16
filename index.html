@@ -330,10 +330,23 @@ function host(u){try{return new URL(u).hostname}catch(e){return ""}}
 function normUrl(u){u=(u||"").trim(); if(u && !/^[a-z]+:\/\//i.test(u)) u="https://"+u; return u}
 function allLinks(){ const m=[]; data.groups.forEach(g=>g.l.forEach(([n,u])=>m.push({n,u,c:g.c}))); return m }
 function findLink(name){ for(const g of data.groups) for(const [n,u] of g.l) if(n===name) return {n,u,c:g.c}; return null }
-// 图标：先显示首字母色块，网站 favicon 加载成功后再盖上去（没网时也不会出现空白）
+// 图标：先显示首字母色块，找到真正的网站图标后再盖上去。
+// 谷歌的图标服务在网站没有图标时会返回一个 16px 的灰色地球，所以 ≤16px 的结果不采用，改问 DuckDuckGo；
+// DuckDuckGo 的占位图固定是 48×48，同样不采用。两边都没有就保留首字母色块。
+const favCache={};                                   // 域名 -> 可用的图标地址，或 ""（没有图标）
+const favG=h=>`https://www.google.com/s2/favicons?domain=${h}&sz=64`, favD=h=>`https://icons.duckduckgo.com/ip3/${h}.ico`;
+function favLoad(img){
+  const h=img.dataset.h, w=img.naturalWidth, ht=img.naturalHeight;
+  if(img.dataset.s!=="d"){ if(w>16){ favCache[h]=img.src; img.style.opacity=1 } else { img.dataset.s="d"; img.src=favD(h) } }
+  else if(w>1 && !(w===48 && ht===48)){ favCache[h]=img.src; img.style.opacity=1 }
+  else { favCache[h]=""; img.remove() }
+}
+function favErr(img){ if(img.dataset.s!=="d"){ img.dataset.s="d"; img.src=favD(img.dataset.h) } else { favCache[img.dataset.h]=""; img.remove() } }
 function ico(u,name,color){
-  const h=host(u), ch=esc((name||"?").trim().charAt(0).toUpperCase());
-  const img = h ? `<img loading="lazy" draggable="false" src="https://www.google.com/s2/favicons?domain=${h}&sz=64" onload="if(this.naturalWidth>1)this.style.opacity=1" onerror="this.remove()" alt="">` : "";
+  const h=host(u), ch=esc((name||"?").trim().charAt(0).toUpperCase()), c=favCache[h];
+  const img = !h || c==="" ? "" : c
+    ? `<img draggable="false" src="${esc(c)}" style="opacity:1" alt="">`
+    : `<img loading="lazy" draggable="false" data-h="${esc(h)}" src="${favG(h)}" onload="favLoad(this)" onerror="favErr(this)" alt="">`;
   return `<span class="ico" style="background:${color}">${ch}${img}</span>`;
 }
 function toast(t){const e=$("#toast");e.textContent=t;e.classList.add("show");clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove("show"),1800)}
